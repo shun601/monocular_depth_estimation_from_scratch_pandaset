@@ -45,8 +45,8 @@ class Pandaset(Dataset):
 
                         rgb_list = sorted(rgb_dir.glob("*.jpg"))
 
-                        extrinsics = pose_to_extrinsic_array(pose_json_path, int(scene))
-                        intrinsics = intrinsic_to_array(intrinsic_json_path)
+                        extrinsics = pose_to_extrinsic_array(pose_json_path, len(rgb_list))
+                        intrinsics = intrinsic_to_array(intrinsic_json_path, len(rgb_list))
                         sequence = list(zip(rgb_list, extrinsics, intrinsics))
                         self.sequences.append(sequence)
                     elif variation == "lidar":
@@ -88,34 +88,38 @@ def load_json(json_path):
     return out
     
 
-def pose_to_extrinsic_array(pose_json_path, idx):
-    pose = load_json(pose_json_path)[idx]
-    # クォータニオン
-    quat = np.array([pose["heading"]["w"],
-                     pose["heading"]["x"],
-                     pose["heading"]["y"],
-                     pose["heading"]["z"]])
-    # カメラ位置（ワールド座標）
-    world_pos = np.array([pose["position"]["x"],
-                          pose["position"]["y"],
-                          pose["position"]["z"]])
-    # Compose translations(移動), rotations, zooms, [shears] to affine
-    pose_mat = t3d.affines.compose(np.array(world_pos),
-                                   t3d.quaternions.quat2mat(quat), # Calculate rotation matrix corresponding to quaternion
-                                   [1.0, 1.0, 1.0])
-    #外部パラメータ行列
-    return np.linalg.inv(pose_mat)
+def pose_to_extrinsic_array(pose_json_path, len_rgb_list):
+    arr = []
+    for idx in range(len_rgb_list):
+        pose = load_json(pose_json_path)[idx]
+        # クォータニオン
+        quat = np.array([pose["heading"]["w"],
+                         pose["heading"]["x"],
+                         pose["heading"]["y"],
+                         pose["heading"]["z"]])
+        # カメラ位置（ワールド座標）
+        world_pos = np.array([pose["position"]["x"],
+                              pose["position"]["y"],
+                              pose["position"]["z"]])
+        # Compose translations(移動), rotations, zooms, [shears] to affine
+        pose_mat = t3d.affines.compose(np.array(world_pos),
+                                       t3d.quaternions.quat2mat(quat), # Calculate rotation matrix corresponding to quaternion
+                                       [1.0, 1.0, 1.0])
+        arr.append([np.linalg.inv(pose_mat).tolist()])
+    return arr
     
 
 
-def intrinsic_to_array(intrinsic_json_path):
+def intrinsic_to_array(intrinsic_json_path, len_rgb_list):
+    arr = []
     intrinsic = load_json(intrinsic_json_path)
     intrinsic_array = np.array([
         [intrinsic["fx"], 0, intrinsic["cx"]],
         [0, intrinsic["fy"], intrinsic["cy"]],
         [0, 0, 1]
     ])
-    return intrinsic_array
+    arr.append([intrinsic_array.tolist()])
+    return arr * len_rgb_list
 
 
 
