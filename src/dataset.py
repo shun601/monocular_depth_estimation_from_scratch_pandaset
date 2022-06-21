@@ -113,7 +113,8 @@ def intrinsic_to_array(intrinsic_json_path):
     intrinsic_array = np.array([
         [intrinsic["fx"], 0, intrinsic["cx"]],
         [0, intrinsic["fy"], intrinsic["cy"]],
-        [0, 0, 1]])
+        [0, 0, 1]
+    ])
     return intrinsic_array
 
 
