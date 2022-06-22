@@ -118,7 +118,7 @@ def intrinsic_to_array(intrinsic_json_path, len_rgb_list):
         [0, intrinsic["fy"], intrinsic["cy"]],
         [0, 0, 1]
     ])
-    arr.append([intrinsic_array.tolist()])
+    arr.append(intrinsic_array.tolist())
     return arr * len_rgb_list
 
 
