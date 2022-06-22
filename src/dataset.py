@@ -79,7 +79,7 @@ class Pandaset(Dataset):
         return len(self.samples)
 
     def load_image(self, path):
-        return cv2.imread(str(path))[..., ::-1]
+        return cv2.imread(str(path))
 
     
 def load_json(json_path):
@@ -105,7 +105,7 @@ def pose_to_extrinsic_array(pose_json_path, len_rgb_list):
         pose_mat = t3d.affines.compose(np.array(world_pos),
                                        t3d.quaternions.quat2mat(quat), # Calculate rotation matrix corresponding to quaternion
                                        [1.0, 1.0, 1.0])
-        arr.append([np.linalg.inv(pose_mat).tolist()])
+        arr.append(np.linalg.inv(pose_mat).tolist())
     return arr
     
 
